@@ -1,0 +1,164 @@
+[project]
+name = "django-admin-otp"
+version = "0.1.0"
+description = "Implements Django Admin OTP Auth"
+authors = [
+    {name = "whatislove118", email = "pochikalin@gmail.com"},
+]
+dependencies = ["django-otp>=1.6.1", "qrcode>=8.2", "pillow>=11.3.0"]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+dev = [
+    "django>=5.2.5",
+    "pre-commit>=4.3.0",
+    "ruff>=0.12.10",
+    "commitizen>=4.8.3",
+]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+
+[tool.ruff]
+line-length = 120
+fix = true
+namespace-packages = [
+    "django_admin_otp",
+]
+exclude = ["scripts"]
+output-format = "grouped"
+show-fixes = true
+src = [
+    "django_admin_otp",
+]
+
+[tool.ruff.lint]
+select = [
+    "ALL",
+]
+ignore = [
+    "D",
+    "FBT001",
+    "FBT002",
+    "PGH003",
+    "SIM117",
+    "TD002",
+    "TD003",
+    "FIX002",
+    "ANN401",
+    "PLR0913",
+    "ARG002",
+    "PLW2901",
+    "ARG003",
+    "G004",
+    "RUF002",
+    "RUF003",
+    "TCH002",
+    "RUF001",
+]
+extend-select = [
+    "E501",
+    "B",
+    "C",
+    "E",
+    "F",
+    "W",
+    "B9",
+    "B904",
+]
+
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = [
+    "F401",
+]
+"*" = [
+    "B008",
+]
+"noxfile.py" = [
+    "E501",
+]
+"tests/*" = [
+    "ANN",
+    "ANN002",
+    "ANN003",
+    "SLF001",
+    "S105",
+    "ANN001",
+    "ARG001",
+    "S101",
+    "PT004",
+    "S113",
+    "PLR2004",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "django_admin_otp",
+]
+no-lines-before = [
+    "local-folder",
+]
+force-wrap-aliases = true
+combine-as-imports = true
+
+[tool.ruff.format]
+docstring-code-format = true
+skip-magic-trailing-comma = false
+preview = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.0"
+version_files = [
+    "django_admin_mfa/__init__.py"
+]
+style = [
+    [
+        "qmark",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "question",
+        "bold",
+    ],
+    [
+        "answer",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "pointer",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "highlighted",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "selected",
+        "fg:#cc5454",
+    ],
+    [
+        "separator",
+        "fg:#cc5454",
+    ],
+    [
+        "instruction",
+        "",
+    ],
+    [
+        "text",
+        "",
+    ],
+    [
+        "disabled",
+        "fg:#858585 italic",
+    ],
+]
