@@ -9,32 +9,36 @@ from .models import OTPVerification
 
 User = get_user_model()
 
+
 class MFAForm(forms.Form):
     code = forms.CharField(
         max_length=6,
         required=True,
-        widget=forms.TextInput(attrs={
-            "maxlength": 6,
-            "pattern": "[0-9]*",
-            "inputmode": "numeric"
-        }),
-        label="MFA Code"
+        widget=forms.TextInput(
+            attrs={
+                "maxlength": 6,
+                "pattern": "[0-9]*",
+                "inputmode": "numeric",
+            },
+        ),
+        label="MFA Code",
     )
+
 
 @admin.register(OTPVerification)
 class OTPVerificationAdmin(admin.ModelAdmin):
     list_display = ("user", "confirmed", "created_at")
     readonly_fields = ("user", "confirmed", "created_at")
     actions = None  # remove standart actions
-    fields = [
+    fields = (
         "user",
         "confirmed",
         "created_at",
-    ]
+    )
     change_list_template = "admin/otpverification_changelist.html"
 
     def has_add_permission(self, request):
-        return False 
+        return False
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -42,12 +46,11 @@ class OTPVerificationAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('setup-mfa/', self.admin_site.admin_view(self.setup_mfa), name='setup-mfa'),
-            path('disable-mfa/', self.admin_site.admin_view(self.disable_mfa), name='disable-mfa'),
+            path("setup-mfa/", self.admin_site.admin_view(self.setup_mfa), name="setup-mfa"),
+            path("disable-mfa/", self.admin_site.admin_view(self.disable_mfa), name="disable-mfa"),
         ]
         return custom_urls + urls
 
@@ -56,18 +59,19 @@ class OTPVerificationAdmin(admin.ModelAdmin):
             return ""
         uri = obj.generate_qr_code_uri()
         img_data = utils.generate_qr_image(uri)
-        return f'<img src="{img_data}" width="200" height="200"/>'    
+        return f'<img src="{img_data}" width="200" height="200"/>'
+
     qr_preview.allow_tags = True
     qr_preview.short_description = "QR Code"
 
     def setup_mfa(self, request):
         user = request.user
         verification, _ = OTPVerification.objects.get_or_create(user=user)
-        
+
         if verification.confirmed:
             messages.warning(request, "MFA has been already connected")
             return redirect("..")
-        
+
         form = MFAForm()
         if request.method == "POST":
             form = MFAForm(request.POST)
@@ -78,9 +82,8 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                     verification.save()
                     messages.success(request, "MFA had been connected successfully")
                     return redirect("..")
-                
-                form.add_error("code", "Wrong code")
 
+                form.add_error("code", "Wrong code")
 
         uri = verification.generate_qr_code_uri()
         qr_img = utils.generate_qr_image(uri)
@@ -91,16 +94,17 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                 "form": form,
                 "qr_img": qr_img,
                 "title": "Connect MFA",
-            }
+            },
         )
 
     def disable_mfa(self, request):
         user = request.user
         verification = getattr(user, "admin_otp_verification", None)
         if not verification or not verification.confirmed:
-            messages.warning(request, "MFA не подключена")
+            messages.warning(request, "MFA hasn't been connected")
             return redirect("..")
 
+        form = MFAForm()
         if request.method == "POST":
             form = MFAForm(request.POST)
             if form.is_valid():
@@ -108,11 +112,9 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                 if verification.verify_token(code):
                     verification.delete()
                     del request.session[_settings.MFA_VERIFIED_SESSION_KEY]
-                    messages.success(request, "MFA отключена")
+                    messages.success(request, "MFA has been disconnected")
                     return redirect("..")
-                else:
-                    form.add_error("code", "Неверный код")
-        else:
-            form = MFAForm()
 
-        return render(request, "admin/mfa_popup.html", {"form": form, "title": "Отключение MFA"})
+                form.add_error("code", "Wrong code")
+
+        return render(request, "admin/mfa_popup.html", {"form": form, "title": "Disable MFA"})
