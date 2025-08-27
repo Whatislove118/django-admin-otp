@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>MFA Setup</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f9fafb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 400px;
+            text-align: center;
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .qr {
+            margin: 1rem 0;
+        }
+
+        .qr img {
+            width: 200px;
+            height: 200px;
+        }
+
+        .code-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .code-grid input {
+            width: 2.5rem;
+            height: 3rem;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #15803d;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+    <script>
+        function setupCodeInput() {
+            const inputs = document.querySelectorAll(".code-grid input");
+            const hiddenInput = document.getElementById("token");
+            const form = document.querySelector("form");
+
+            inputs.forEach((input, idx) => {
+                input.addEventListener("input", () => {
+                    if (input.value.length === 1 && idx < inputs.length - 1) {
+                        inputs[idx + 1].focus();
+                    }
+                    hiddenInput.value = Array.from(inputs).map(i => i.value).join("");
+
+                    if (hiddenInput.value.length === 6) {
+                        form.submit();
+                    }
+                });
+
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && !input.value && idx > 0) {
+                        inputs[idx - 1].focus();
+                    }
+                });
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", setupCodeInput);
+    </script>
+</head>
+<body>
+    <div class="card">
+        <h2>Setup MFA</h2>
+
+        <p>Scan the QR code in your app (Google Authenticator, Authy, etc.)</p>
+
+        <div class="qr">
+            <img src="{{ qr_code_url }}" alt="QR Code">
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <div class="code-grid">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+            </div>
+            <input type="hidden" name="token" id="token">
+        </form>
+    </div>
+</body>
+</html>

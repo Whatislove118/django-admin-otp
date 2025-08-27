@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:4506f4a22dfca30d4f22f3e2bf1231f290fd7d2c823b768f89776210786e8497"
+content_hash = "sha256:9c470c3120430d1f038e137ea5ae59bd92f99cbda006f3a8799e087202223029"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -140,18 +140,6 @@ dependencies = [
 files = [
     {file = "django-5.2.5-py3-none-any.whl", hash = "sha256:2b2ada0ee8a5ff743a40e2b9820d1f8e24c11bac9ae6469cd548f0057ea6ddcd"},
     {file = "django-5.2.5.tar.gz", hash = "sha256:0745b25681b129a77aae3d4f6549b62d3913d74407831abaa0d9021a03954bae"},
-]
-
-[[package]]
-name = "django-otp"
-version = "1.6.1"
-summary = ""
-dependencies = [
-    "django",
-]
-files = [
-    {file = "django_otp-1.6.1-py3-none-any.whl", hash = "sha256:a632e126c9e6ffc5f961a1e0c2452ee0d7ed589073141a729f33915957177916"},
-    {file = "django_otp-1.6.1.tar.gz", hash = "sha256:68dafa008921fd418382492d81b717636d8cc1364e24e8f9222b72264adf3c5d"},
 ]
 
 [[package]]
@@ -353,6 +341,15 @@ dependencies = [
 files = [
     {file = "prompt_toolkit-3.0.51-py3-none-any.whl", hash = "sha256:52742911fde84e2d423e2f9a4cf1de7d7ac4e51958f648d9540e0fb8db077b07"},
     {file = "prompt_toolkit-3.0.51.tar.gz", hash = "sha256:931a162e3b27fc90c86f1b48bb1fb2c528c2761475e57c9c06de13311c7b54ed"},
+]
+
+[[package]]
+name = "pyotp"
+version = "2.9.0"
+summary = ""
+files = [
+    {file = "pyotp-2.9.0-py3-none-any.whl", hash = "sha256:81c2e5865b8ac55e825b0358e496e1d9387c811e85bb40e71a3b29b288963612"},
+    {file = "pyotp-2.9.0.tar.gz", hash = "sha256:346b6642e0dbdde3b4ff5a930b664ca82abfa116356ed48cc42c7d6590d36f63"},
 ]
 
 [[package]]

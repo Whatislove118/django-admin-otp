@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+            color: #222;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            color: #555;
+        }
+
+        .input-code {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-code input {
+            width: 40px;
+            height: 50px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-code input:focus {
+            border-color: #4f46e5;
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #444;
+            margin-bottom: 1.2rem;
+        }
+
+        button {
+            width: 100%;
+            background: #4f46e5;
+            color: #fff;
+            border: none;
+            padding: 0.9rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 1rem;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const inputs = document.querySelectorAll(".input-code input");
+            inputs.forEach((input, idx) => {
+                input.addEventListener("input", () => {
+                    if (input.value.length === 1 && idx < inputs.length - 1) {
+                        inputs[idx + 1].focus();
+                    }
+                });
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && !input.value && idx > 0) {
+                        inputs[idx - 1].focus();
+                    }
+                });
+            });
+
+            // Collect code before submitting the form
+            const form = document.querySelector("form");
+            form.addEventListener("submit", (e) => {
+                const hiddenInput = document.getElementById("token");
+                hiddenInput.value = Array.from(inputs).map(i => i.value).join("");
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="card">
+        <h2>Login Verification</h2>
+        <p>Enter the code from your app</p>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="input-code">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
+            </div>
+
+            <input type="hidden" name="token" id="token">
+
+            <label class="checkbox">
+                <input type="checkbox" name="trust_device" checked>
+                Trust this device for {{ settings.TRUSTED_DEVICE_DAYS }} days
+            </label>
+
+            <button type="submit">Подтвердить</button>
+        </form>
+    </div>
+</body>
+</html>

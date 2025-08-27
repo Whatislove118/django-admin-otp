@@ -1,0 +1,18 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+{% if qr_img %}
+    <img src="{{ qr_img }}" width="200" height="200"/>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+        {{ form.code.label_tag }} {{ form.code }}
+        {% for error in form.code.errors %}
+            <p style="color:red">{{ error }}</p>
+        {% endfor %}
+    </div>
+</br>
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}

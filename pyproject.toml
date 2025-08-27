@@ -5,7 +5,7 @@ description = "Implements Django Admin OTP Auth"
 authors = [
     {name = "whatislove118", email = "pochikalin@gmail.com"},
 ]
-dependencies = ["django-otp>=1.6.1", "qrcode>=8.2", "pillow>=11.3.0"]
+dependencies = ["qrcode>=8.2", "pillow>=11.3.0", "pyotp>=2.9.0"]
 requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
@@ -24,6 +24,9 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+
+[tool.pdm.scripts]
+manage = "python test_environment/manage.py"
 
 
 [tool.ruff]

@@ -1,0 +1,17 @@
+{% extends "admin/change_list.html" %}
+
+{% load static %}
+
+{% block object-tools %}
+<div class="object-tools" style="margin-bottom: 10px;">
+    {% if request.user.admin_totp_device.confirmed %}
+        <a class="button" href="{% url 'admin:disable-mfa' %}">Disable MFA for current user</a>
+    {% else %}
+        <a class="button" href="{% url 'admin:setup-mfa' %}">Setup MFA for current user</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+{% endblock %}
