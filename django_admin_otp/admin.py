@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render
 from django.urls import path
 
-from django_admin_otp import _settings, utils
-from .models import OTPVerification
+from django_admin_otp import settings, utils
+from .models import OTPVerification, TrustedDevice
 
 User = get_user_model()
 
@@ -109,12 +109,34 @@ class OTPVerificationAdmin(admin.ModelAdmin):
             form = MFAForm(request.POST)
             if form.is_valid():
                 code = form.cleaned_data["code"]
-                if verification.verify_token(code):
+                if verification.verify(code):
                     verification.delete()
-                    del request.session[_settings.MFA_VERIFIED_SESSION_KEY]
+                    del request.session[settings.MFA_VERIFIED_SESSION_KEY]
                     messages.success(request, "MFA has been disconnected")
                     return redirect("..")
 
                 form.add_error("code", "Wrong code")
 
         return render(request, "admin/mfa_popup.html", {"form": form, "title": "Disable MFA"})
+
+
+@admin.register(TrustedDevice)
+class TrustedDeviceAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "device_info", "created_at", "expires_at")
+    list_filter = ["expires_at", "created_at"]
+    search_fields = ["user__username", "user__id", "device_info__icontains"]
+    autocomplete_fields = ["user"]
+    readonly_fields = ["user"]
+    exclude = ["token"]
+
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return False
+
+        return obj.user == request.user
+
+    def has_delete_permission(self, request, obj=None):
+        if not obj:
+            return False
+
+        return obj.user == request.user

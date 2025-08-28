@@ -105,7 +105,7 @@
             // Collect code before submitting the form
             const form = document.querySelector("form");
             form.addEventListener("submit", (e) => {
-                const hiddenInput = document.getElementById("token");
+                const hiddenInput = document.getElementById("code");
                 hiddenInput.value = Array.from(inputs).map(i => i.value).join("");
             });
         });
@@ -132,11 +132,11 @@
                 <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric">
             </div>
 
-            <input type="hidden" name="token" id="token">
+            <input type="hidden" name="code" id="code">
 
             <label class="checkbox">
-                <input type="checkbox" name="trust_device" checked>
-                Trust this device for {{ settings.TRUSTED_DEVICE_DAYS }} days
+                <input type="checkbox" name="trust_device">
+                Trust this device for {{ TRUSTED_DEVICE_DAYS }} days
             </label>
 
             <button type="submit">Подтвердить</button>

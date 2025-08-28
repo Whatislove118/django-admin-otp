@@ -4,7 +4,7 @@
 
 {% block object-tools %}
 <div class="object-tools" style="margin-bottom: 10px;">
-    {% if request.user.admin_totp_device.confirmed %}
+    {% if request.user.admin_otp_verification.confirmed %}
         <a class="button" href="{% url 'admin:disable-mfa' %}">Disable MFA for current user</a>
     {% else %}
         <a class="button" href="{% url 'admin:setup-mfa' %}">Setup MFA for current user</a>
