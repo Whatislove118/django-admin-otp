@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin, messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
+from django.db.transaction import atomic
 from django.shortcuts import redirect, render
 from django.urls import path
 
@@ -64,6 +65,7 @@ class OTPVerificationAdmin(admin.ModelAdmin):
     qr_preview.allow_tags = True
     qr_preview.short_description = "QR Code"
 
+    @atomic
     def setup_mfa(self, request):
         user = request.user
         verification, _ = OTPVerification.objects.get_or_create(user=user)
@@ -81,6 +83,7 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                     verification.confirmed = True
                     verification.save()
                     messages.success(request, "MFA had been connected successfully")
+                    logout(request)
                     return redirect("..")
 
                 form.add_error("code", "Wrong code")
@@ -97,6 +100,7 @@ class OTPVerificationAdmin(admin.ModelAdmin):
             },
         )
 
+    @atomic
     def disable_mfa(self, request):
         user = request.user
         verification = getattr(user, "admin_otp_verification", None)
@@ -111,6 +115,7 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                 code = form.cleaned_data["code"]
                 if verification.verify(code):
                     verification.delete()
+                    TrustedDevice.objects.filter(user=user).delete()
                     del request.session[settings.MFA_VERIFIED_SESSION_KEY]
                     messages.success(request, "MFA has been disconnected")
                     return redirect("..")

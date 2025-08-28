@@ -292,7 +292,9 @@ class OTPVerificationAdminTest(TestCase):
     @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
     def test_setup_mfa_get_renders_template(self, mock_qr):
         url = reverse("admin:setup-mfa")
+
         response = self.client.get(url)
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "qr_image")
         self.assertIsInstance(response.context["form"], MFAForm)
@@ -300,15 +302,20 @@ class OTPVerificationAdminTest(TestCase):
     @patch.object(OTPVerification, "verify", return_value=True)
     def test_setup_mfa_post_valid_code_confirms(self, mock_verify):
         url = reverse("admin:setup-mfa")
+
         response = self.client.post(url, data={"code": "123456"})
-        self.assertEqual(response.status_code, 302)
         self.verification.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(self.verification.confirmed)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)  # logout after successful setup mfa
 
     @patch.object(OTPVerification, "verify", return_value=False)
     def test_setup_mfa_post_invalid_code_shows_error(self, mock_verify):
         url = reverse("admin:setup-mfa")
+
         response = self.client.post(url, data={"code": "wrong"})
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Wrong code")
 
@@ -316,6 +323,7 @@ class OTPVerificationAdminTest(TestCase):
     def test_disable_mfa_post_valid_code_deletes_verification(self, mock_verify):
         self.verification.confirmed = True
         self.verification.save()
+        TrustedDevice.create_for_user(self.user, device_info="test")
         session = self.client.session
         session[settings.MFA_VERIFIED_SESSION_KEY] = True
         session.save()
@@ -325,6 +333,7 @@ class OTPVerificationAdminTest(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertFalse(OTPVerification.objects.filter(user=self.user).exists())
+        self.assertFalse(TrustedDevice.objects.filter(user=self.user).exists())
 
     @patch.object(OTPVerification, "verify", return_value=False)
     def test_disable_mfa_post_invalid_code_shows_error(self, mock_verify):
@@ -350,6 +359,7 @@ class TrustedDeviceAdminTest(TestCase):
 
     def test_change_permission_for_owner(self):
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+
         self.assertTrue(
             admin_instance.has_change_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
@@ -358,13 +368,16 @@ class TrustedDeviceAdminTest(TestCase):
         other_user = User.objects.create_user(username="other", password="12345")
         self.device.user = other_user
         self.device.save()
+
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+
         self.assertFalse(
             admin_instance.has_change_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
 
     def test_delete_permission_for_owner(self):
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+
         self.assertTrue(
             admin_instance.has_delete_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
@@ -373,7 +386,9 @@ class TrustedDeviceAdminTest(TestCase):
         other_user = User.objects.create_user(username="other", password="12345")
         self.device.user = other_user
         self.device.save()
+
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+
         self.assertFalse(
             admin_instance.has_delete_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
