@@ -53,6 +53,9 @@ class TrustedDeviceQuerySet(models.QuerySet):
     def active(self):
         return self.filter(expires_at__gt=timezone.now())
 
+    def by_token_cipher(self, token_cipher):
+        return self.filter(token=signing.loads(token_cipher))
+
 
 class TrustedDevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="admin_otp_trusted_devices")

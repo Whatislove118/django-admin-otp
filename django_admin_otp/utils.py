@@ -5,7 +5,7 @@ import qrcode
 
 
 def generate_qr_image(uri):
-    """Возвращает base64-картинку QR-кода"""
+    """Returns base64-image for QR-code"""
     qr = qrcode.make(uri)
     buf = io.BytesIO()
     qr.save(buf, format="PNG")

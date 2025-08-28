@@ -1,4 +1,3 @@
-from django.core import signing
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -23,13 +22,14 @@ class AdminOTPMiddleware:
         if request.session.get(settings.MFA_VERIFIED_SESSION_KEY):
             return False
 
+        trusted_token_cipher = request.COOKIES.get("trusted_device")
+        if not trusted_token_cipher:
+            return True
+
         # If user has trusted device cookie and device is exists - no need to check
-        trusted_token = request.COOKIES.get("trusted_device")
         return not (
-            TrustedDevice.objects.filter(
-                user=request.user,
-                token=signing.loads(trusted_token) if trusted_token else None,
-            )
+            TrustedDevice.objects.filter(user=request.user)
+            .by_token_cipher(token_cipher=trusted_token_cipher)
             .active()
             .exists()
         )
