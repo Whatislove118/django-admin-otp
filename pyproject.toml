@@ -97,7 +97,7 @@ extend-select = [
 "noxfile.py" = [
     "E501",
 ]
-"tests/*" = [
+"tests.py" = [
     "ANN",
     "ANN002",
     "ANN003",
@@ -109,6 +109,7 @@ extend-select = [
     "PT004",
     "S113",
     "PLR2004",
+    "S106",
 ]
 
 [tool.ruff.lint.isort]

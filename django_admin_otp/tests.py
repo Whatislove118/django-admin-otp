@@ -1,15 +1,20 @@
 from datetime import timedelta
+from unittest import mock
+from unittest.mock import patch
 
+from django.contrib import admin
 from django.contrib.auth.models import AnonymousUser, User
 from django.core import signing
-from django.test import RequestFactory, TestCase
+from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 from django_admin_otp import settings
+from django_admin_otp.admin import MFAForm, TrustedDeviceAdmin
 from django_admin_otp.middleware import AdminOTPMiddleware
 from django_admin_otp.models import OTPVerification, TrustedDevice
+from django_admin_otp.views import mfa_setup, mfa_verify
 
 
 class AdminOTPMiddlewareTest(TestCase):
@@ -144,3 +149,231 @@ class AdminOTPMiddlewareTest(TestCase):
             self.assertEqual(response, "OK")
         finally:
             settings.FORCE_OTP = old_value
+
+
+class MFAVerifyViewTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(username="testuser", password="12345", is_staff=True)
+        self.verification = OTPVerification.objects.create(user=self.user, confirmed=True, secret_key_cipher="abc")
+
+    @patch.object(OTPVerification, "verify", return_value=True)
+    def test_post_valid_code_trust_device(self, mock_verify):
+        request = self.factory.post("/mfa-verify/", data={"code": "123456", "trust_device": True})
+        request.user = self.user
+        request.session = {}
+        request.META["HTTP_USER_AGENT"] = "test-agent"
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
+
+    @patch.object(OTPVerification, "verify", return_value=True)
+    def test_post_valid_code_no_trust_device(self, mock_verify):
+        request = self.factory.post("/mfa-verify/", data={"code": "123456", "trust_device": False})
+        request.user = self.user
+        request.session = {}
+        request.META["HTTP_USER_AGENT"] = "test-agent"
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertNotIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
+
+    def test_post_invalid_form(self):
+        request = self.factory.post("/mfa-verify/", data={"code": "9999990", "trust_device": True})
+        request.user = self.user
+        request.session = {}
+        request.META["HTTP_USER_AGENT"] = "test-agent"
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Wrong form", response.content.decode())
+
+    def test_post_verify_error(self):
+        request = self.factory.post("/mfa-verify/", data={"code": "9999990", "trust_device": True})
+        request.user = self.user
+        request.session = {}
+        request.META["HTTP_USER_AGENT"] = "test-agent"
+
+        with patch.object(OTPVerification, "verify", return_value=False):
+            response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Wrong form", response.content.decode())
+
+    def test_get_request_renders_template(self):
+        request = self.factory.get("/mfa-verify/")
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 200)
+
+
+class MFASetupViewTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(username="setupuser", password="12345", is_staff=True)
+
+    @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
+    def test_get_renders_qr(self, mock_qr):
+        request = self.factory.get("/mfa-setup/")
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("qr_image", response.content.decode())
+
+    @patch.object(OTPVerification, "verify", return_value=True)
+    @patch("django_admin_otp.views.utils.generate_qr_image", return_value="qr_image")
+    def test_post_valid_code_confirms_otp(self, mock_qr, mock_verify):
+        verification = OTPVerification.objects.create(user=self.user)
+        request = self.factory.post("/mfa-setup/", data={"code": "123456"})
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+        verification.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertTrue(verification.confirmed)
+
+    @patch.object(OTPVerification, "verify", return_value=False)
+    @patch("django_admin_otp.views.utils.generate_qr_image", return_value="qr_image")
+    def test_post_invalid_code_renders_template_wrong_form(self, mock_qr, mock_verify):
+        OTPVerification.objects.create(user=self.user)
+        request = self.factory.post("/mfa-setup/", data={"code": "9999990"})
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Wrong form data", response.content.decode())
+
+    @patch.object(OTPVerification, "verify", return_value=False)
+    @patch("django_admin_otp.views.utils.generate_qr_image", return_value="qr_image")
+    def test_post_invalid_code_renders_template_invalid_code(self, mock_qr, mock_verify):
+        verification = OTPVerification.objects.create(user=self.user)
+        verification.verify = mock.Mock(return_value=False)
+        request = self.factory.post("/mfa-setup/", data={"code": "999999"})
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Wrong code", response.content.decode())
+
+
+class OTPVerificationAdminTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_superuser(username="admin", password="12345", email="admin@test.com")
+        self.client.login(username="admin", password="12345")
+        self.verification = OTPVerification.objects.create(
+            user=self.user,
+            confirmed=False,
+            secret_key_cipher=signing.dumps("abc"),
+        )
+        settings.FORCE_OTP = False
+
+    @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
+    def test_setup_mfa_get_renders_template(self, mock_qr):
+        url = reverse("admin:setup-mfa")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "qr_image")
+        self.assertIsInstance(response.context["form"], MFAForm)
+
+    @patch.object(OTPVerification, "verify", return_value=True)
+    def test_setup_mfa_post_valid_code_confirms(self, mock_verify):
+        url = reverse("admin:setup-mfa")
+        response = self.client.post(url, data={"code": "123456"})
+        self.assertEqual(response.status_code, 302)
+        self.verification.refresh_from_db()
+        self.assertTrue(self.verification.confirmed)
+
+    @patch.object(OTPVerification, "verify", return_value=False)
+    def test_setup_mfa_post_invalid_code_shows_error(self, mock_verify):
+        url = reverse("admin:setup-mfa")
+        response = self.client.post(url, data={"code": "wrong"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Wrong code")
+
+    @patch.object(OTPVerification, "verify", return_value=True)
+    def test_disable_mfa_post_valid_code_deletes_verification(self, mock_verify):
+        self.verification.confirmed = True
+        self.verification.save()
+        session = self.client.session
+        session[settings.MFA_VERIFIED_SESSION_KEY] = True
+        session.save()
+        url = reverse("admin:disable-mfa")
+
+        response = self.client.post(url, data={"code": "123456"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(OTPVerification.objects.filter(user=self.user).exists())
+
+    @patch.object(OTPVerification, "verify", return_value=False)
+    def test_disable_mfa_post_invalid_code_shows_error(self, mock_verify):
+        self.verification.confirmed = True
+        self.verification.save()
+        session = self.client.session
+        session[settings.MFA_VERIFIED_SESSION_KEY] = True
+        session.save()
+        url = reverse("admin:disable-mfa")
+
+        response = self.client.post(url, data={"code": "wrong"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Wrong code")
+
+
+class TrustedDeviceAdminTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_superuser(username="admin", password="12345", email="admin@test.com")
+        self.client.login(username="admin", password="12345")
+        self.device = TrustedDevice.create_for_user(user=self.user, device_info="test-device")
+
+    def test_change_permission_for_owner(self):
+        admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+        self.assertTrue(
+            admin_instance.has_change_permission(request=self.client.request().wsgi_request, obj=self.device),
+        )
+
+    def test_change_permission_for_other_user(self):
+        other_user = User.objects.create_user(username="other", password="12345")
+        self.device.user = other_user
+        self.device.save()
+        admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+        self.assertFalse(
+            admin_instance.has_change_permission(request=self.client.request().wsgi_request, obj=self.device),
+        )
+
+    def test_delete_permission_for_owner(self):
+        admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+        self.assertTrue(
+            admin_instance.has_delete_permission(request=self.client.request().wsgi_request, obj=self.device),
+        )
+
+    def test_delete_permission_for_other_user(self):
+        other_user = User.objects.create_user(username="other", password="12345")
+        self.device.user = other_user
+        self.device.save()
+        admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
+        self.assertFalse(
+            admin_instance.has_delete_permission(request=self.client.request().wsgi_request, obj=self.device),
+        )
