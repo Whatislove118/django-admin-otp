@@ -22,7 +22,7 @@ class AdminOTPMiddleware:
         if request.session.get(settings.MFA_VERIFIED_SESSION_KEY):
             return False
 
-        trusted_token_cipher = request.COOKIES.get("trusted_device")
+        trusted_token_cipher = request.COOKIES.get(settings.DEVICE_TOKEN_COOKIE_NAME)
         if not trusted_token_cipher:
             return True
 

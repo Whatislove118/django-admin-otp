@@ -71,7 +71,7 @@ class AdminOTPMiddlewareTest(TestCase):
         request = self.factory.get(self.admin_path)
         request.user = self.user
         request.session = {}
-        request.COOKIES = {"trusted_device": device.token_cipher}
+        request.COOKIES = {settings.DEVICE_TOKEN_COOKIE_NAME: device.token_cipher}
 
         response = self.middleware(request)
 
@@ -116,7 +116,7 @@ class AdminOTPMiddlewareTest(TestCase):
         request = self.factory.get(self.admin_path)
         request.user = self.user
         request.session = {}
-        request.COOKIES = {"trusted_device": device.token_cipher}
+        request.COOKIES = {settings.DEVICE_TOKEN_COOKIE_NAME: device.token_cipher}
 
         response = self.middleware(request)
 

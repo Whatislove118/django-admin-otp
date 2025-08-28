@@ -114,15 +114,20 @@ class OTPVerificationAdmin(admin.ModelAdmin):
             if form.is_valid():
                 code = form.cleaned_data["code"]
                 if verification.verify(code):
-                    verification.delete()
-                    TrustedDevice.objects.filter(user=user).delete()
-                    del request.session[settings.MFA_VERIFIED_SESSION_KEY]
+                    self._disable_cleanup(request, verification, user)
+                    logout(request)
                     messages.success(request, "MFA has been disconnected")
                     return redirect("..")
 
                 form.add_error("code", "Wrong code")
 
         return render(request, "admin/mfa_popup.html", {"form": form, "title": "Disable MFA"})
+
+    def _disable_cleanup(self, request, verification, user):
+        verification.delete()
+        TrustedDevice.objects.filter(user=user).delete()
+        if settings.MFA_VERIFIED_SESSION_KEY in request.session:
+            del request.session[settings.MFA_VERIFIED_SESSION_KEY]
 
 
 @admin.register(TrustedDevice)
