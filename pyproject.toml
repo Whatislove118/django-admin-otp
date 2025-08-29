@@ -25,6 +25,10 @@ build-backend = "pdm.backend"
 [tool.pdm]
 distribution = true
 
+[tool.pdm.build]
+source-includes = ["django_admin_otp/"]
+excludes = ["tests.py"]
+
 [tool.pdm.scripts]
 manage = "python test_environment/manage.py"
 
@@ -130,9 +134,10 @@ preview = true
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.0.0"
-version_files = [
-    "django_admin_mfa/__init__.py"
-]
+tag_format = "v$version"
+version_files = ["pyproject.toml:version"]
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
 style = [
     [
         "qmark",

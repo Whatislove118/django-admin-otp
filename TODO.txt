@@ -1,5 +1,4 @@
 MAJOR
-2. int-to-bool for FORCE_OTP
 3. Add ci/cd with bump/deploy
 
 MINOR
