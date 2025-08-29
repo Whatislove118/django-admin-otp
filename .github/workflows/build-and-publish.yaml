@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install PDM
         run: |
@@ -30,6 +30,11 @@ jobs:
       - name: Build package
         run: pdm build
 
-      - name: Publish to GitHub Packages
-        run: |
-          pdm publish
+      - name: Login to PyPI
+        run: pdm publish -l
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+      - name: Publish to PyPI
+        run: pdm publish
