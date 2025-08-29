@@ -30,11 +30,8 @@ jobs:
       - name: Build package
         run: pdm build
 
-      - name: Login to PyPI
-        run: pdm publish -l
+      - name: Publish to PyPI
+        run: pdm publish
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-
-      - name: Publish to PyPI
-        run: pdm publish
