@@ -117,7 +117,9 @@ class OTPVerificationAdmin(admin.ModelAdmin):
                     self._disable_cleanup(request, verification, user)
                     logout(request)
                     messages.success(request, "MFA has been disconnected")
-                    return redirect("..")
+                    response = redirect("..")
+                    response.delete_cookie(settings.DEVICE_TOKEN_COOKIE_NAME)
+                    return response
 
                 form.add_error("code", "Wrong code")
 

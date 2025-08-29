@@ -334,6 +334,8 @@ class OTPVerificationAdminTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(OTPVerification.objects.filter(user=self.user).exists())
         self.assertFalse(TrustedDevice.objects.filter(user=self.user).exists())
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+        self.assertTrue(settings.DEVICE_TOKEN_COOKIE_NAME in response.cookies)
 
     @patch.object(OTPVerification, "verify", return_value=False)
     def test_disable_mfa_post_invalid_code_shows_error(self, mock_verify):

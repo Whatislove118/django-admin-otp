@@ -11,7 +11,7 @@ Lightweight **MFA (TOTP) for Django Admin**: enable/disable MFA directly from th
 - ❌ Disable MFA with code confirmation
 - 💻 Trusted devices: skip MFA for up to N days
 - ⚙️ Middleware-based enforcement for admin access
-- 📦 Configurable via `django_admin_otp.settings`
+- 📦 Configurable via environment variables
 - 🎨 Ready-to-use templates for verification and setup pages
 
 ---
@@ -89,7 +89,7 @@ Configurable environment variables:
 
 - `ADMIN_OTP_PROJECT_NAME` - project name which would display in Auth APP.
 - `ADMIN_PATH_PREFIX` — admin URL prefix (default `"/admin"`). Used for cases when your admin app is behind proxy
-- `ADMIN_OTP_FORCE` — require MFA setup for all admin users (default `False`). See `Force OTP` section for more details.
+- `ADMIN_OTP_FORCE` (int) — require MFA setup for all admin users (default `0`). See `Force OTP` section for more details.
 - `ADMIN_OTP_TRUSTED_DEVICE_DAYS` — validity period for trusted devices (defaults `30` days)
 - `ADMIN_OTP_DEVICE_TOKEN_COOKIE_NAME` — name of trusted device cookie (default `"admin_otp_trusted_device"`).
 

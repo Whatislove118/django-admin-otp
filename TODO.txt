@@ -1,5 +1,4 @@
 MAJOR
-1. Remove trusted cookie if user has been disconnected from MFA
 2. int-to-bool for FORCE_OTP
 3. Add ci/cd with bump/deploy
 

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -124,3 +125,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+ADMIN_OTP_FORCE = os.environ.get("ADMIN_OTP_FORCE", 0)
+ADMIN_OTP_PROJECT_NAME = os.environ.get("ADMIN_OTP_PROJECT_NAME", "TEST_PROJECT")
+ADMIN_OTP_DEVICE_TOKEN_COOKIE_NAME = os.environ.get("ADMIN_OTP_DEVICE_TOKEN_COOKIE_NAME", "test_trustdevice")
+ADMIN_OTP_TRUSTED_DEVICE_DAYS = os.environ.get("ADMIN_OTP_TRUSTED_DEVICE_DAYS", 30)
