@@ -1,0 +1,24 @@
+name: PUBLISH CI/CD
+run-name: PUBLISH CI/CD
+
+on:
+  push:
+    tags:
+        - "v*"
+  workflow_dispatch:
+
+
+
+jobs:
+  pre-commit:
+    uses: ./.github/workflows/pre_commit.yaml
+
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  build-and-publish:
+    needs: [pre-commit, test]
+    uses: ./.github/workflows/build-and-publish.yaml
+    permissions:
+      contents: read
+      packages: write

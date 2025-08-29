@@ -1,0 +1,20 @@
+name: PR CI/CD
+run-name:  PR CI/CD
+
+on:
+  pull_request:
+    types:
+      - synchronize
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    uses: ./.github/workflows/pre_commit.yaml
+
+  test:
+    uses: ./.github/workflows/test.yaml

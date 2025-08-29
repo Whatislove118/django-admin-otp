@@ -1,0 +1,57 @@
+name: bump-version
+
+description: "Bump version using Commitizen and push changes"
+
+on:
+  workflow_call:
+    inputs:
+      release_type:
+        description: "Release Type: patch / minor / major"
+        required: true
+        type: string
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Install PDM and Commitizen
+        run: |
+          python -m pip install pdm
+          pdm install
+
+      - name: Configure Git user
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+
+      - name: Bump version
+        run: |
+          pdm run cz bump --increment ${{ inputs.release_type }} --yes
+
+      - name: Push changes and tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD:master
+          git push origin --tags
+
+      - name: Trigger publish workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish.yaml/dispatches \
+            -d '{"ref":"master"}'

@@ -1,0 +1,35 @@
+name: Publish
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PDM
+        run: |
+          python -m pip install pdm
+
+      - name: Install dependencies
+        run: pdm install
+
+      - name: Build package
+        run: pdm build
+
+      - name: Publish to GitHub Packages
+        run: |
+          pdm publish
