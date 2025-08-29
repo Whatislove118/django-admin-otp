@@ -1,8 +1,1 @@
-## Unreleased
-
-### Feat
-
-- **Initial**: Add otp django admin
-- add logout after successful admin connect mfa
-- add trusted device logic
-- add base logic & models
+## v0.0.1 (2025-08-29)
