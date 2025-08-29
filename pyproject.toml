@@ -10,6 +10,10 @@ requires-python = ">=3.10, <=3.13"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.urls]
+Homepage = "https://github.com/Whatislove118/django-admin-otp"
+Documentation = "https://github.com/Whatislove118/django-admin-otp#readme"
+
 [project.optional-dependencies]
 dev = [
     "django>=5.2.5",
