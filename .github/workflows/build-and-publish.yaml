@@ -27,11 +27,5 @@ jobs:
       - name: Install dependencies
         run: pdm install
 
-      - name: Build package
-        run: pdm build
-
       - name: Publish to PyPI
-        run: pdm publish
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: pdm publish -u ${{ secrets.PYPI_USERNAME }} -P ${{ secrets.PYPI_PASSWORD }}
