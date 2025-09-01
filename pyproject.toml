@@ -29,6 +29,9 @@ build-backend = "pdm.backend"
 [tool.pdm]
 distribution = true
 
+[tool.setuptools]
+packages = ["django_admin_otp"]
+
 [tool.pdm.build]
 source-includes = ["django_admin_otp/"]
 excludes = ["tests.py"]

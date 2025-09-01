@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django_admin_otp",
 ]
-
+# Should be last middleware
 MIDDLEWARE = [
     # ...
     "django_admin_otp.middleware.AdminOTPMiddleware",
