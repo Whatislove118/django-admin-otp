@@ -11,6 +11,9 @@ ADMIN_PREFIX = getattr(settings, "ADMIN_PATH_PREFIX", DEFAULT_ADMIN_PREFIX)
 TRUSTED_DEVICE_DAYS = getattr(settings, "ADMIN_OTP_TRUSTED_DEVICE_DAYS", 30)
 FORCE_OTP = bool(getattr(settings, "ADMIN_OTP_FORCE", 0))
 
+if not settings.TEMPLATES:
+    settings.TEMPLATES = [{"OPTIONS": {"context_processors": []}}]
+
 settings.TEMPLATES[0]["OPTIONS"]["context_processors"].append(
     "django_admin_otp.context_processors.admin_otp.settings",
 )
