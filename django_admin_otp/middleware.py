@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from django_admin_otp import settings
 from django_admin_otp.models import OTPVerification, TrustedDevice
+from django_admin_otp.utils import admin_url
 
 
 class AdminOTPMiddleware:
@@ -11,7 +12,7 @@ class AdminOTPMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-        self._admin_prefix = f"/{settings.ADMIN_PREFIX}"
+        self._admin_prefix = admin_url()
 
     def _is_verify_needed(self, request):
         # MFA is only checked for the admin site and authenticated users
@@ -39,7 +40,7 @@ class AdminOTPMiddleware:
             return self.get_response(request)
 
         if not OTPVerification.objects.filter(user=request.user, confirmed=True).exists():
-            if settings.FORCE_OTP:
+            if settings.FORCE_OTP and request.path != reverse(settings.MFA_SETUP_INTERNAL_NAME):
                 return redirect(settings.MFA_SETUP_INTERNAL_NAME)
             return self.get_response(request)
 

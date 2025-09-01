@@ -22,7 +22,7 @@ class AdminOTPMiddlewareTest(TestCase):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(username="testuser", password=get_random_string(16), is_staff=True)
         self.middleware = AdminOTPMiddleware(get_response=lambda _: "OK")
-        self.admin_path = settings.ADMIN_PREFIX + "/some-page/"
+        self.admin_path = f"/{settings.ADMIN_PATH}/some-page/"
         self.verify_url = reverse(settings.MFA_VERIFY_INTERNAL_NAME)
         self.setup_url = reverse(settings.MFA_SETUP_INTERNAL_NAME)
 
@@ -167,7 +167,7 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
         self.assertIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
@@ -181,7 +181,7 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
         self.assertNotIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
@@ -246,7 +246,7 @@ class MFASetupViewTest(TestCase):
         verification.refresh_from_db()
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, settings.ADMIN_PREFIX)
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
         self.assertTrue(verification.confirmed)
 
     @patch.object(OTPVerification, "verify", return_value=False)

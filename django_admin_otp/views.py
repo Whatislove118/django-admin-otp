@@ -9,7 +9,7 @@ from django_admin_otp.models import OTPVerification, TrustedDevice
 
 def _mfa_verify_success_response(request, user, trust_device):
     request.session[settings.MFA_VERIFIED_SESSION_KEY] = True
-    response = redirect(settings.ADMIN_PREFIX)
+    response = redirect(utils.admin_url())
 
     if trust_device:
         device = TrustedDevice.create_for_user(user=user, device_info=request.META["HTTP_USER_AGENT"])
@@ -62,7 +62,7 @@ def mfa_setup(request):
     if verification.verify(form.cleaned_data["code"]):
         verification.confirmed = True
         verification.save()
-        return redirect(settings.ADMIN_PREFIX)
+        return redirect(utils.admin_url())
 
     return render(
         request,
