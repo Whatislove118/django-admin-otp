@@ -1,6 +1,6 @@
 [project]
 name = "django-admin-otp"
-version = "0.1.1"
+version = "0.0.6"
 description = "Implements Django Admin OTP Auth"
 authors = [
     {name = "whatislove118", email = "pochikalin@gmail.com"},
