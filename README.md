@@ -39,6 +39,18 @@ MIDDLEWARE = [
 
 ADMIN_OTP_PROJECT_NAME = "Your-project-name"
 ```
+Add urls (you need to set ADMIN_PREFIX env explicitly)
+```python
+from django.contrib import admin
+from django.urls import include, path
+from django.conf import settings
+
+urlpatterns = [
+    path(settings.ADMIN_PREFIX, admin.site.urls),
+    path(f"{settings.ADMIN_PREFIX}admin-mfa/", include("django_admin_otp.urls")),
+]
+
+```
 Run migrations and createsuperuser (if it hasn't created yet):
 ```bash
 python manage.py migrate django_admin_otp
