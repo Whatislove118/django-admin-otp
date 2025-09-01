@@ -25,6 +25,7 @@ pip install django-admin-otp
 ## Quickstart
 Add this code to settings.py
 ```python
+from django_admin_otp.settings import
 # settings.py
 INSTALLED_APPS = [
     # ...
@@ -38,6 +39,7 @@ MIDDLEWARE = [
 ]
 
 ADMIN_OTP_PROJECT_NAME = "Your-project-name"
+ADMIN_PATH_PREFIX = os.environ.get("ADMIN_PATH_PREFIX", DEFAULT_ADMIN_PREFIX)
 ```
 Add urls
 ```python
@@ -47,7 +49,7 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(f"/admin/admin-mfa/", include("django_admin_otp.urls")), # or use ADMIN_PATH_PREFIX if behind proxy
+    path(f"{settings.ADMIN_PATH_PREFIX}admin-mfa/", include("django_admin_otp.urls")),
 ]
 
 ```
