@@ -1,6 +1,6 @@
 from django.conf import settings
 
-DEFAULT_ADMIN_PREFIX = "/admin/"
+DEFAULT_ADMIN_PREFIX = "admin/"
 MFA_VERIFIED_SESSION_KEY = "mfa-verified"
 MFA_VERIFY_INTERNAL_NAME = "mfa-verify"
 MFA_SETUP_INTERNAL_NAME = "mfa-setup"

@@ -11,7 +11,7 @@ class AdminOTPMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-        self._admin_prefix = settings.ADMIN_PREFIX
+        self._admin_prefix = f"/{settings.ADMIN_PREFIX}"
 
     def _is_verify_needed(self, request):
         # MFA is only checked for the admin site and authenticated users
