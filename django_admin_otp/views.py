@@ -14,9 +14,9 @@ def _mfa_verify_success_response(request, user, trust_device):
     if trust_device:
         device = TrustedDevice.create_for_user(user=user, device_info=request.META["HTTP_USER_AGENT"])
         response.set_cookie(
-            key=settings.device_token_cookie_name(),
+            key=settings.DEVICE_TOKEN_COOKIE_NAME,
             value=device.token_cipher,
-            max_age=settings.trusted_device_days() * 24 * 60 * 60,  # seconds
+            max_age=settings.TRUSTED_DEVICE_DAYS * 24 * 60 * 60,  # seconds
             httponly=True,
             secure=not global_settings.DEBUG,  # secured in production
             samesite="Lax",

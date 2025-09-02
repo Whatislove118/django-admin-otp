@@ -22,7 +22,7 @@ class AdminOTPMiddlewareTest(TestCase):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(username="testuser", password=get_random_string(16), is_staff=True)
         self.middleware = AdminOTPMiddleware(get_response=lambda _: "OK")
-        self.admin_path = f"/{settings.admin_path()}/some-page/"
+        self.admin_path = f"/{settings.ADMIN_PATH}/some-page/"
         self.verify_url = reverse(settings.MFA_VERIFY_INTERNAL_NAME)
         self.setup_url = reverse(settings.MFA_SETUP_INTERNAL_NAME)
 
@@ -71,15 +71,15 @@ class AdminOTPMiddlewareTest(TestCase):
         request = self.factory.get(self.admin_path)
         request.user = self.user
         request.session = {}
-        request.COOKIES = {settings.device_token_cookie_name(): device.token_cipher}
+        request.COOKIES = {settings.DEVICE_TOKEN_COOKIE_NAME: device.token_cipher}
 
         response = self.middleware(request)
 
         self.assertEqual(response, "OK")
 
     def test_force_otp_redirects_to_setup(self):
-        old_value = settings.force_otp()
-        settings.force_otp = mock.Mock(return_value=True)
+        old_value = settings.FORCE_OTP
+        settings.FORCE_OTP = True
         try:
             request = self.factory.get(self.admin_path)
             request.user = self.user
@@ -91,7 +91,7 @@ class AdminOTPMiddlewareTest(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, self.setup_url)
         finally:
-            settings.force_otp = mock.Mock(return_value=old_value)
+            settings.FORCE_OTP = old_value
 
     def test_access_to_mfa_verify_page_does_not_redirect(self):
         OTPVerification.objects.create(user=self.user, confirmed=True, secret_key_cipher=signing.dumps("abc"))
@@ -116,7 +116,7 @@ class AdminOTPMiddlewareTest(TestCase):
         request = self.factory.get(self.admin_path)
         request.user = self.user
         request.session = {}
-        request.COOKIES = {settings.device_token_cookie_name(): device.token_cipher}
+        request.COOKIES = {settings.DEVICE_TOKEN_COOKIE_NAME: device.token_cipher}
 
         response = self.middleware(request)
 
@@ -136,8 +136,8 @@ class AdminOTPMiddlewareTest(TestCase):
         self.assertEqual(response, "OK")
 
     def test_no_otp_force_otp_false_passes(self):
-        old_value = settings.force_otp()
-        settings.force_otp = mock.Mock(return_value=False)
+        old_value = settings.FORCE_OTP
+        settings.FORCE_OTP = False
         try:
             request = self.factory.get(self.admin_path)
             request.user = self.user
@@ -148,7 +148,7 @@ class AdminOTPMiddlewareTest(TestCase):
 
             self.assertEqual(response, "OK")
         finally:
-            settings.force_otp = mock.Mock(return_value=old_value)
+            settings.FORCE_OTP = old_value
 
 
 class MFAVerifyViewTest(TestCase):
@@ -167,8 +167,8 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.admin_path()}")
-        self.assertIn(settings.device_token_cookie_name(), response.cookies)
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
+        self.assertIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
     @patch.object(OTPVerification, "verify", return_value=True)
@@ -181,8 +181,8 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.admin_path()}")
-        self.assertNotIn(settings.device_token_cookie_name(), response.cookies)
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
+        self.assertNotIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
     def test_post_invalid_form(self):
@@ -246,7 +246,7 @@ class MFASetupViewTest(TestCase):
         verification.refresh_from_db()
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.admin_path()}")
+        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
         self.assertTrue(verification.confirmed)
 
     @patch.object(OTPVerification, "verify", return_value=False)
@@ -287,7 +287,7 @@ class OTPVerificationAdminTest(TestCase):
             confirmed=False,
             secret_key_cipher=signing.dumps("abc"),
         )
-        settings.force_otp = mock.Mock(return_value=False)
+        settings.FORCE_OTP = False
 
     @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
     def test_setup_mfa_get_renders_template(self, mock_qr):
@@ -335,7 +335,7 @@ class OTPVerificationAdminTest(TestCase):
         self.assertFalse(OTPVerification.objects.filter(user=self.user).exists())
         self.assertFalse(TrustedDevice.objects.filter(user=self.user).exists())
         self.assertFalse(response.wsgi_request.user.is_authenticated)
-        self.assertTrue(settings.device_token_cookie_name() in response.cookies)
+        self.assertTrue(settings.DEVICE_TOKEN_COOKIE_NAME in response.cookies)
 
     @patch.object(OTPVerification, "verify", return_value=False)
     def test_disable_mfa_post_invalid_code_shows_error(self, mock_verify):

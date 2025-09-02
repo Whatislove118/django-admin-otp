@@ -17,13 +17,14 @@ class AdminOTPMiddleware:
     def _is_verify_needed(self, request):
         # MFA is only checked for the admin site and authenticated users
         if not (request.path.startswith(self._admin_prefix) and request.user.is_authenticated):
+            print("No mfa request?")  # noqa: T201
             return False
 
         # If MFA is already verified in the session → no need to check
         return not bool(request.session.get(settings.MFA_VERIFIED_SESSION_KEY, False))
 
     def _is_trusted_device(self, request):
-        trusted_token_cipher = request.COOKIES.get(settings.device_token_cookie_name())
+        trusted_token_cipher = request.COOKIES.get(settings.DEVICE_TOKEN_COOKIE_NAME)
         if not trusted_token_cipher:
             return False
 
@@ -36,11 +37,13 @@ class AdminOTPMiddleware:
         )
 
     def __call__(self, request):
+        print("RQ " + request.path + " " + reverse(settings.MFA_VERIFY_INTERNAL_NAME))  # noqa: T201
         if not self._is_verify_needed(request):
             return self.get_response(request)
 
         if not OTPVerification.objects.filter(user=request.user, confirmed=True).exists():
-            if settings.force_otp() and request.path != reverse(settings.MFA_SETUP_INTERNAL_NAME):
+            print("Here")  # noqa: T201
+            if settings.FORCE_OTP and request.path != reverse(settings.MFA_SETUP_INTERNAL_NAME):
                 return redirect(settings.MFA_SETUP_INTERNAL_NAME)
             return self.get_response(request)
 
