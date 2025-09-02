@@ -42,7 +42,7 @@ class OTPVerification(models.Model):
     def generate_qr_code_uri(self):
         return self.totp.provisioning_uri(
             name=self.user.username,
-            issuer_name=settings.PROJECT_NAME,
+            issuer_name=settings.project_name(),
         )
 
     def verify(self, code):
@@ -72,7 +72,7 @@ class TrustedDevice(models.Model):
     @classmethod
     def create_for_user(cls, user, device_info):
         token = get_random_string(64)
-        expires_at = timezone.now() + timedelta(days=settings.TRUSTED_DEVICE_DAYS)
+        expires_at = timezone.now() + timedelta(days=settings.trusted_device_days())
         return cls.objects.create(
             user=user,
             token=token,

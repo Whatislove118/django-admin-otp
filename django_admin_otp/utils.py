@@ -18,4 +18,4 @@ def generate_qr_image(uri):
 
 @cache
 def admin_url():
-    return f"/{settings.ADMIN_PATH}"
+    return f"/{settings.admin_path()}"
