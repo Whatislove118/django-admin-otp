@@ -25,8 +25,9 @@ pip install django-admin-otp
 ## Quickstart
 Add this code to settings.py
 ```python
-from django_admin_otp.settings import
+from django_admin_otp import settings as otp_settings
 # settings.py
+
 INSTALLED_APPS = [
     # ...
     "django.contrib.admin",
@@ -37,6 +38,9 @@ MIDDLEWARE = [
     # ...
     "django_admin_otp.middleware.AdminOTPMiddleware",
 ]
+...
+# at the end of file
+otp_settings.init()
 ```
 Add urls
 ```python
