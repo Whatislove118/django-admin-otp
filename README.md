@@ -39,7 +39,7 @@ MIDDLEWARE = [
 ]
 
 ADMIN_OTP_PROJECT_NAME = "Your-project-name"
-APP_PREFIX = os.environ.get("APP_PREFIX", DEFAULT_ADMIN_PREFIX)
+ADMIN_PATH = "admin" # or custom prefix
 ```
 Add urls
 ```python
@@ -49,7 +49,7 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(f"{settings.APP_PREFIX}admin-mfa/", include("django_admin_otp.urls")),
+    path("admin-mfa/", include("django_admin_otp.urls")),
 ]
 
 ```
@@ -102,7 +102,7 @@ Click on it, enter code from your app and your mfa (with trusted devices) would 
 Configurable environment variables:
 
 - `ADMIN_OTP_PROJECT_NAME` - project name which would display in Auth APP.
-- `APP_PREFIX` — admin URL prefix (default `"/admin"`). Used for cases when your admin app is behind proxy
+- `ADMIN_PATH` — admin URL prefix (default `"admin"`).
 - `ADMIN_OTP_FORCE` (int) — require MFA setup for all admin users (default `0`). See `Force OTP` section for more details.
 - `ADMIN_OTP_TRUSTED_DEVICE_DAYS` — validity period for trusted devices (defaults `30` days)
 - `ADMIN_OTP_DEVICE_TOKEN_COOKIE_NAME` — name of trusted device cookie (default `"admin_otp_trusted_device"`).

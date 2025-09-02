@@ -18,6 +18,4 @@ def generate_qr_image(uri):
 
 @cache
 def admin_url():
-    if settings.APP_PREFIX:
-        return f"/{settings.APP_PREFIX}/{settings.DEFAULT_ADMIN_PATH}"
-    return f"/{settings.DEFAULT_ADMIN_PATH}"
+    return f"/{settings.ADMIN_PATH}"
