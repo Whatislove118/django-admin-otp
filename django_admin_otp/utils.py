@@ -1,6 +1,5 @@
 import base64
 import io
-from functools import cache
 
 import qrcode
 
@@ -16,6 +15,5 @@ def generate_qr_image(uri):
     return f"data:image/png;base64,{img_b64}"
 
 
-@cache
 def admin_url():
     return f"/{settings.ADMIN_PATH}"
