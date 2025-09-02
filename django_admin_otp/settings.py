@@ -13,7 +13,21 @@ TRUSTED_DEVICE_DAYS = os.environ.get("ADMIN_OTP_TRUSTED_DEVICE_DAYS", 30)
 FORCE_OTP = bool(os.environ.get("ADMIN_OTP_FORCE", 0))
 
 if not settings.TEMPLATES:
-    settings.TEMPLATES = [{"OPTIONS": {"context_processors": []}}]
+    settings.TEMPLATES = [
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [],
+            "APP_DIRS": True,
+            "OPTIONS": {
+                "context_processors": [
+                    "django.template.context_processors.request",
+                    "django.contrib.auth.context_processors.auth",
+                    "django.contrib.messages.context_processors.messages",
+                    "django_admin_otp.context_processors.admin_otp.settings",
+                ],
+            },
+        },
+    ]
 
 settings.TEMPLATES[0]["OPTIONS"]["context_processors"].append(
     "django_admin_otp.context_processors.admin_otp.settings",
