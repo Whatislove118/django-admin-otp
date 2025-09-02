@@ -37,9 +37,6 @@ MIDDLEWARE = [
     # ...
     "django_admin_otp.middleware.AdminOTPMiddleware",
 ]
-
-ADMIN_OTP_PROJECT_NAME = "Your-project-name"
-ADMIN_PATH = "admin" # or custom prefix
 ```
 Add urls
 ```python
@@ -52,6 +49,10 @@ urlpatterns = [
     path("admin-mfa/", include("django_admin_otp.urls")),
 ]
 
+```
+Export variables
+```
+export ADMIN_OTP_PROJECT_NAME "Your-project-name"
 ```
 Run migrations and createsuperuser (if it hasn't created yet):
 ```bash
