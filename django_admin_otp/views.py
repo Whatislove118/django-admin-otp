@@ -28,6 +28,9 @@ def _mfa_verify_get_response(request):
     if utils.is_request_mfa_verified(request) or utils.is_trusted_device_request(request):
         return redirect(utils.admin_url())
 
+    if not OTPVerification.objects.filter(user=request.user, confirmed=True).exists() and settings.FORCE_OTP:
+        return redirect(utils.admin_url())
+
     return render(request, "mfa_verify.html")
 
 

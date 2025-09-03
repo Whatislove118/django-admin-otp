@@ -240,6 +240,23 @@ class MFAVerifyViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, admin_url())
 
+    def test_get_request_go_to_admin_cause_no_verification_no_force_otp(self):
+        old_value = settings.FORCE_OTP
+        settings.FORCE_OTP = 1
+        try:
+            self.verification.delete()
+            request = self.factory.get("/mfa-verify/")
+            request.user = self.user
+            request.session = {}
+            request.COOKIES = {}
+
+            response = mfa_verify(request)
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, admin_url())
+        finally:
+            settings.FORCE_OTP = old_value
+
 
 class MFASetupViewTest(TestCase):
     def setUp(self):
