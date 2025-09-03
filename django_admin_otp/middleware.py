@@ -2,8 +2,8 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from django_admin_otp import settings
-from django_admin_otp.models import OTPVerification, TrustedDevice
-from django_admin_otp.utils import admin_url
+from django_admin_otp.models import OTPVerification
+from django_admin_otp.utils import admin_url, is_request_mfa_verified, is_trusted_device_request
 
 
 class AdminOTPMiddleware:
@@ -20,20 +20,7 @@ class AdminOTPMiddleware:
             return False
 
         # If MFA is already verified in the session → no need to check
-        return not bool(request.session.get(settings.MFA_VERIFIED_SESSION_KEY, False))
-
-    def _is_trusted_device(self, request):
-        trusted_token_cipher = request.COOKIES.get(settings.DEVICE_TOKEN_COOKIE_NAME)
-        if not trusted_token_cipher:
-            return False
-
-        # If user has trusted device cookie and device is exists - no need to check
-        return (
-            TrustedDevice.objects.filter(user=request.user)
-            .by_token_cipher(token_cipher=trusted_token_cipher)
-            .active()
-            .exists()
-        )
+        return not is_request_mfa_verified(request)
 
     def __call__(self, request):
         if not self._is_verify_needed(request):
@@ -44,7 +31,7 @@ class AdminOTPMiddleware:
                 return redirect(settings.MFA_SETUP_INTERNAL_NAME)
             return self.get_response(request)
 
-        if self._is_trusted_device(request):
+        if is_trusted_device_request(request):
             return self.get_response(request)
 
         # Ignore MFA check path to avoid redirect loops

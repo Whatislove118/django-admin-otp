@@ -24,10 +24,17 @@ def _mfa_verify_success_response(request, user, trust_device):
     return response
 
 
+def _mfa_verify_get_response(request):
+    if utils.is_request_mfa_verified(request) or utils.is_trusted_device_request(request):
+        return redirect(utils.admin_url())
+
+    return render(request, "mfa_verify.html")
+
+
 @login_required
 def mfa_verify(request):
     if request.method != "POST":
-        return render(request, "mfa_verify.html")
+        return _mfa_verify_get_response(request)
 
     user = request.user
     form = OTPForm(request.POST)

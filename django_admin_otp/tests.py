@@ -14,6 +14,7 @@ from django_admin_otp import settings
 from django_admin_otp.admin import MFAForm, TrustedDeviceAdmin
 from django_admin_otp.middleware import AdminOTPMiddleware
 from django_admin_otp.models import OTPVerification, TrustedDevice
+from django_admin_otp.utils import admin_url
 from django_admin_otp.views import mfa_setup, mfa_verify
 
 
@@ -167,7 +168,7 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
+        self.assertEqual(response.url, admin_url())
         self.assertIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
@@ -181,7 +182,7 @@ class MFAVerifyViewTest(TestCase):
         response = mfa_verify(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
+        self.assertEqual(response.url, admin_url())
         self.assertNotIn(settings.DEVICE_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(request.session.get(settings.MFA_VERIFIED_SESSION_KEY))
 
@@ -217,6 +218,28 @@ class MFAVerifyViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_get_request_go_to_admin_cause_already_verified(self):
+        request = self.factory.get("/mfa-verify/")
+        request.user = self.user
+        request.session = {settings.MFA_VERIFIED_SESSION_KEY: True}
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, admin_url())
+
+    def test_get_request_go_to_admin_cause_trusted_device(self):
+        request = self.factory.get("/mfa-verify/")
+        device = TrustedDevice.create_for_user(self.user, device_info="test")
+        request.user = self.user
+        request.session = {}
+        request.COOKIES = {settings.DEVICE_TOKEN_COOKIE_NAME: device.token_cipher}
+
+        response = mfa_verify(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, admin_url())
+
 
 class MFASetupViewTest(TestCase):
     def setUp(self):
@@ -246,7 +269,7 @@ class MFASetupViewTest(TestCase):
         verification.refresh_from_db()
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/{settings.ADMIN_PATH}")
+        self.assertEqual(response.url, admin_url())
         self.assertTrue(verification.confirmed)
 
     @patch.object(OTPVerification, "verify", return_value=False)
