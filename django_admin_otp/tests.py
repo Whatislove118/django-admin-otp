@@ -253,7 +253,7 @@ class MFAVerifyViewTest(TestCase):
             response = mfa_verify(request)
 
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, admin_url())
+            self.assertEqual(response.url, reverse(settings.MFA_SETUP_INTERNAL_NAME))
         finally:
             settings.FORCE_OTP = old_value
 
@@ -273,6 +273,30 @@ class MFASetupViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("qr_image", response.content.decode())
+
+    @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
+    def test_get_confirmed_verification_already_exists_but_not_confirmed(self, mock_qr):
+        request = self.factory.get("/mfa-setup/")
+        OTPVerification.objects.create(user=self.user, confirmed=False)
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("qr_image", response.content.decode())
+
+    @patch("django_admin_otp.utils.generate_qr_image", return_value="qr_image")
+    def test_get_confirmed_verification_already_exists_and_confirmed(self, mock_qr):
+        request = self.factory.get("/mfa-setup/")
+        OTPVerification.objects.create(user=self.user, confirmed=True)
+        request.user = self.user
+        request.session = {}
+
+        response = mfa_setup(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, admin_url())
 
     @patch.object(OTPVerification, "verify", return_value=True)
     @patch("django_admin_otp.views.utils.generate_qr_image", return_value="qr_image")

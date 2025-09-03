@@ -29,7 +29,7 @@ def _mfa_verify_get_response(request):
         return redirect(utils.admin_url())
 
     if not OTPVerification.objects.filter(user=request.user, confirmed=True).exists() and settings.FORCE_OTP:
-        return redirect(utils.admin_url())
+        return redirect(settings.MFA_SETUP_INTERNAL_NAME)
 
     return render(request, "mfa_verify.html")
 
@@ -55,15 +55,23 @@ def mfa_verify(request):
     return render(request, "mfa_verify.html", {"error": "Wrong code"})
 
 
+def _mfa_setup_get_response(request, verification):
+    if verification.confirmed:
+        # if user already has the confirmed verification - skip it
+        return redirect(utils.admin_url())
+
+    return render(
+        request,
+        "mfa_setup.html",
+        {"qr_code_url": utils.generate_qr_image(verification.generate_qr_code_uri())},
+    )
+
+
 @login_required
 def mfa_setup(request):
     verification, _ = OTPVerification.objects.get_or_create(user=request.user)
     if request.method != "POST":
-        return render(
-            request,
-            "mfa_setup.html",
-            {"qr_code_url": utils.generate_qr_image(verification.generate_qr_code_uri())},
-        )
+        return _mfa_setup_get_response(request, verification)
 
     form = OTPForm(request.POST)
     if not form.is_valid():
