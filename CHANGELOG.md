@@ -1,3 +1,11 @@
+## v0.1.14 (2025-09-03)
+
+### Feat
+
+- add redirect to direct access to mfa-setup
+- add redirect to direct access to mfa-verify
+- add redirect to direct access to mfa-verify
+
 ## v0.1.13 (2025-09-02)
 
 ### Fix

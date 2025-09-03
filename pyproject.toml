@@ -1,6 +1,6 @@
 [project]
 name = "django-admin-otp"
-version = "0.1.13"
+version = "0.1.14"
 description = "Implements Django Admin OTP Auth"
 authors = [
     {name = "whatislove118", email = "pochikalin@gmail.com"},
@@ -138,7 +138,7 @@ preview = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.1.13"
+version = "0.1.14"
 tag_format = "v$version"
 version_files = ["pyproject.toml:version"]
 update_changelog_on_bump = true
