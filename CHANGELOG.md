@@ -1,3 +1,9 @@
+## v0.1.16 (2025-09-15)
+
+### Feat
+
+- **logout**: add logout button on mfa setup and mfa verify
+
 ## v0.1.15 (2025-09-03)
 
 ### Fix
