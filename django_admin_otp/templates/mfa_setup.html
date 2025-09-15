@@ -52,25 +52,21 @@
             border-radius: 8px;
         }
 
-        button {
-            background: #16a34a;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        button:hover {
-            background: #15803d;
-        }
-
         .error {
             color: red;
             margin-bottom: 1rem;
             font-size: 0.9rem;
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: #4f46e5;   /* фиолетовый текст */
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 0.8rem;
+            text-align: left; /* чтобы выглядело как ссылка */
         }
     </style>
     <script>
@@ -130,6 +126,12 @@
             </div>
             <input type="hidden" name="code" id="code">
         </form>
+        <form method="post" action="{% url 'admin-otp-logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-back">
+            ← Назад
+        </button>
+    </form>
     </div>
 </body>
 </html>
