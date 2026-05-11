@@ -42,10 +42,10 @@ class OTPVerificationAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def get_urls(self):
         urls = super().get_urls()
