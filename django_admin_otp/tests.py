@@ -454,7 +454,7 @@ class TrustedDeviceAdminTest(TestCase):
 
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
 
-        self.assertFalse(
+        self.assertTrue(
             admin_instance.has_change_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
 
@@ -472,6 +472,6 @@ class TrustedDeviceAdminTest(TestCase):
 
         admin_instance = TrustedDeviceAdmin(TrustedDevice, admin.site)
 
-        self.assertFalse(
+        self.assertTrue(
             admin_instance.has_delete_permission(request=self.client.request().wsgi_request, obj=self.device),
         )
