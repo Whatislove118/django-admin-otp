@@ -145,10 +145,10 @@ class TrustedDeviceAdmin(admin.ModelAdmin):
         if not obj:
             return False
 
-        return obj.user == request.user
+        return obj.user == request.user or request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
         if not obj:
             return False
 
-        return obj.user == request.user
+        return obj.user == request.user or request.user.is_superuser
