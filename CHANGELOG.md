@@ -1,3 +1,9 @@
+## v0.1.19 (2026-05-11)
+
+### Feat
+
+- add changing/deletion otp for superuser
+
 ## v0.1.18 (2026-03-02)
 
 ### Feat
